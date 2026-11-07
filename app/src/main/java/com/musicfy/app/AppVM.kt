@@ -9,15 +9,25 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+enum class Source(val label: String) { JAMENDO("Jamendo"), AUDIUS("Audius") }
+
 class AppVM(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("musicfy", 0)
     val store = DownloadStore(app)
     val player = PlayerController(app, store)
 
-    val genres = listOf(
+    private val jamendoGenres = listOf(
         "Pop", "Rock", "Electronic", "HipHop", "Jazz", "Classical",
         "Lounge", "Metal", "Ambient", "Reggae", "Folk", "Blues"
     )
+    private val audiusGenres = listOf(
+        "Pop", "Rock", "Electronic", "Hip-Hop/Rap", "Jazz", "Classical",
+        "Metal", "Ambient", "Reggae", "Folk", "Blues", "Lo-Fi"
+    )
+
+    var source by mutableStateOf(Source.JAMENDO)
+    val genres: List<String> get() = if (source == Source.AUDIUS) audiusGenres else jamendoGenres
+    val freshTitle: String get() = if (source == Source.AUDIUS) "All-time favourites" else "New releases"
 
     var hasKey by mutableStateOf(false)
     var genre by mutableStateOf<String?>(null)
@@ -64,9 +74,22 @@ class AppVM(app: Application) : AndroidViewModel(app) {
         loadHome()
     }
 
+    fun selectSource(s: Source) {
+        if (s == source) return
+        source = s
+        genre = null
+        loadHome()
+        search(query)
+    }
+
     fun loadHome() {
-        load<List<Track>>({ popular = it }) { JamendoApi.tracks("popularity_week", tag = genre) }
-        load<List<Track>>({ fresh = it }) { JamendoApi.tracks("releasedate_desc", tag = genre) }
+        if (source == Source.AUDIUS) {
+            load<List<Track>>({ popular = it }) { AudiusApi.trending(genre, "week") }
+            load<List<Track>>({ fresh = it }) { AudiusApi.trending(genre, "allTime") }
+        } else {
+            load<List<Track>>({ popular = it }) { JamendoApi.tracks("popularity_week", tag = genre) }
+            load<List<Track>>({ fresh = it }) { JamendoApi.tracks("releasedate_desc", tag = genre) }
+        }
     }
 
     fun search(q: String) {
@@ -74,11 +97,22 @@ class AppVM(app: Application) : AndroidViewModel(app) {
             sTracks = Async(); sAlbums = Async(); sArtists = Async()
             return
         }
-        load<List<Track>>({ sTracks = it }) { JamendoApi.tracks("relevance", query = q, limit = 40) }
-        load<List<Album>>({ sAlbums = it }) { JamendoApi.searchAlbums(q) }
-        load<List<Artist>>({ sArtists = it }) { JamendoApi.searchArtists(q) }
+        if (source == Source.AUDIUS) {
+            load<List<Track>>({ sTracks = it }) { AudiusApi.searchTracks(q) }
+            load<List<Album>>({ sAlbums = it }) { AudiusApi.searchAlbums(q) }
+            load<List<Artist>>({ sArtists = it }) { AudiusApi.searchArtists(q) }
+        } else {
+            load<List<Track>>({ sTracks = it }) { JamendoApi.tracks("relevance", query = q, limit = 40) }
+            load<List<Album>>({ sAlbums = it }) { JamendoApi.searchAlbums(q) }
+            load<List<Artist>>({ sArtists = it }) { JamendoApi.searchArtists(q) }
+        }
     }
 
-    fun openAlbum(id: String) = load<AlbumDetail>({ album = it }) { JamendoApi.album(id) }
-    fun openArtist(id: String) = load<ArtistDetail>({ artist = it }) { JamendoApi.artist(id) }
+    fun openAlbum(id: String) = load<AlbumDetail>({ album = it }) {
+        if (AudiusApi.owns(id)) AudiusApi.album(id) else JamendoApi.album(id)
+    }
+
+    fun openArtist(id: String) = load<ArtistDetail>({ artist = it }) {
+        if (AudiusApi.owns(id)) AudiusApi.artist(id) else JamendoApi.artist(id)
+    }
 }

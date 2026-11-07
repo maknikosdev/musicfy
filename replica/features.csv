@@ -13,3 +13,4 @@ Playlists,library,should,yes,no,Not built yet
 Liked songs,library,should,yes,no,Not built yet
 Lyrics / podcasts / social,extras,could,yes,skip,Licensed or network features
 Major-label catalogue,content,must,yes,skip,Cannot be cloned
+Second source: Audius (stream-only),content,should,no,yes,Added at user request; API calls unverified against live docs

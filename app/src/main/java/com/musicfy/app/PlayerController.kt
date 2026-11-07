@@ -27,6 +27,8 @@ class PlayerController(private val ctx: Context, private val store: DownloadStor
     val shuffle = MutableStateFlow(false)
     val repeat = MutableStateFlow(Player.REPEAT_MODE_OFF)
     val queue = MutableStateFlow<List<Track>>(emptyList())
+    /** +1 when the track changes forward (slide left), -1 when it goes back (slide right). */
+    val direction = MutableStateFlow(1)
     val errors = MutableSharedFlow<String>(extraBufferCapacity = 8)
 
     private var controller: MediaController? = null
@@ -36,6 +38,10 @@ class PlayerController(private val ctx: Context, private val store: DownloadStor
 
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = sync(player)
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) direction.value = 1
+        }
 
         override fun onPlayerError(error: PlaybackException) {
             errors.tryEmit("This track can't be played (check your connection or download it)")
@@ -106,6 +112,7 @@ class PlayerController(private val ctx: Context, private val store: DownloadStor
 
     fun play(list: List<Track>, index: Int, shuffled: Boolean = false) {
         if (list.isEmpty()) return
+        direction.value = 1
         val items = list.map { itemFor(it) }
         withController { c ->
             c.shuffleModeEnabled = shuffled
@@ -116,10 +123,14 @@ class PlayerController(private val ctx: Context, private val store: DownloadStor
     }
 
     fun playPause() = withController { if (it.isPlaying) it.pause() else it.play() }
-    fun next() = withController { it.seekToNextMediaItem() }
-    fun previous() = withController { it.seekToPrevious() }
+    fun next() = withController { direction.value = 1; it.seekToNextMediaItem() }
+    fun previous() = withController { direction.value = -1; it.seekToPrevious() }
     fun seekTo(ms: Long) = withController { it.seekTo(ms) }
-    fun jumpTo(index: Int) = withController { it.seekToDefaultPosition(index); it.play() }
+    fun jumpTo(index: Int) = withController {
+        direction.value = if (index > it.currentMediaItemIndex) 1 else -1
+        it.seekToDefaultPosition(index)
+        it.play()
+    }
     fun toggleShuffle() = withController { it.shuffleModeEnabled = !it.shuffleModeEnabled }
     fun cycleRepeat() = withController {
         it.repeatMode = when (it.repeatMode) {
