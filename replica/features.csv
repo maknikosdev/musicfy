@@ -1,0 +1,15 @@
+feature,area,priority,original,clone,notes
+Stream playback,player,must,yes,yes,Media3 background service + notification
+Unlimited skip next/previous,player,must,yes,yes,
+Shuffle and repeat,player,must,yes,yes,
+Seek bar and queue,player,must,yes,yes,
+Search songs/albums/artists,search,must,yes,partial,Only Jamendo catalogue
+Album and artist pages,browse,should,yes,yes,
+Download track,offline,must,yes,yes,Only tracks that allow download
+Download album,offline,must,yes,yes,
+Offline playback,offline,must,yes,yes,Private app storage
+Android back button,nav,must,yes,yes,
+Playlists,library,should,yes,no,Not built yet
+Liked songs,library,should,yes,no,Not built yet
+Lyrics / podcasts / social,extras,could,yes,skip,Licensed or network features
+Major-label catalogue,content,must,yes,skip,Cannot be cloned
