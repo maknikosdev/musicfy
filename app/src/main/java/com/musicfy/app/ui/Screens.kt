@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shuffle
@@ -228,14 +229,39 @@ fun ArtistRow(a: Artist, onClick: () -> Unit) {
 }
 
 @Composable
-fun LibraryScreen(vm: AppVM) {
+fun LibraryScreen(vm: AppVM, nav: NavHostController) {
     val list by vm.store.downloaded.collectAsState()
+    val pls by vm.playlists.playlists.collectAsState()
+    var creating by remember { mutableStateOf(false) }
+
+    if (creating) NameDialog("New playlist", "", "Create", onDismiss = { creating = false }) { name ->
+        vm.playlists.create(name)
+        creating = false
+    }
+
     LazyColumn(Modifier.fillMaxSize().background(glow(Color(0xFF123A2A))).statusBarsPadding()) {
         item {
             Text(
                 "Your library", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(16.dp)
             )
+        }
+        item {
+            Row(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Playlists", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                MfButton("New playlist", onClick = { creating = true }, icon = Icons.Default.Add)
+            }
+        }
+        if (pls.isEmpty()) item {
+            Empty("No playlists yet. Tap \"New playlist\" to create one.")
+        } else {
+            items(pls, key = { "pl_" + it.id }) { p -> PlaylistRow(p) { nav.navigate("playlist/${p.id}") } }
+        }
+        item {
+            SectionTitle("Downloads")
             Text(
                 "Downloaded tracks (${list.size}) - play without internet",
                 style = MaterialTheme.typography.bodySmall,

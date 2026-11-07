@@ -28,6 +28,7 @@ MusicFy has two catalogues. Switch between them with the **Jamendo / Audius** ch
 - Unlimited next/previous, shuffle, repeat (all or one), seek bar and play queue.
 - Two music sources (Jamendo and Audius) with a switch on the Home and Search screens.
 - Search for songs, albums and artists, album and artist pages, and genres on the Home screen.
+- Playlists: create and name your own playlists from the Library, add any song with the playlist button next to it (also in the full-screen player), rename or delete playlists and remove songs. Playlists are saved on the device.
 - Download a track or a whole album. Downloads show up in the Library and play offline inside the app. Files are kept in the app's private storage.
 - Polished UI: press animations on every button, row and card, skeleton loading, animated screen transitions, and a colour-washed full-screen player.
 - Song changes slide sideways (forward = slide left, back = slide right) in the player and mini player. You can also swipe the cover or the mini player left/right to skip.
@@ -36,5 +37,5 @@ MusicFy has two catalogues. Switch between them with the **Jamendo / Audius** ch
 ## Limitations
 - The catalogues are Jamendo's and Audius', not the major labels'. Downloading only works for Jamendo tracks that allow it; Audius tracks are stream-only.
 - Downloads run while the app is open (there is no separate download service).
-- No playlists or liked songs yet.
+- No liked songs yet.
 - Before publishing on the Play Store I need to check Jamendo's terms for commercial use, add a privacy policy and run a trademark check on the name.

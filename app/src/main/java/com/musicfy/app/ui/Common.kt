@@ -43,6 +43,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -274,7 +275,7 @@ fun DownloadButton(vm: AppVM, t: Track) {
 }
 
 @Composable
-fun TrackRow(vm: AppVM, t: Track, onPlay: () -> Unit) {
+fun TrackRow(vm: AppVM, t: Track, onRemove: (() -> Unit)? = null, onPlay: () -> Unit) {
     val cur by vm.player.current.collectAsState()
     val playing by vm.player.isPlaying.collectAsState()
     val isCur = cur?.id == t.id
@@ -298,7 +299,11 @@ fun TrackRow(vm: AppVM, t: Track, onPlay: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        if (onRemove == null) AddButton(vm, t)
         DownloadButton(vm, t)
+        if (onRemove != null) PressIconButton(onClick = onRemove) {
+            Icon(Icons.Default.Close, contentDescription = "Remove from playlist")
+        }
     }
 }
 

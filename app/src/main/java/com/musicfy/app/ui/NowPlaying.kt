@@ -175,6 +175,7 @@ fun NowPlaying(vm: AppVM, onClose: () -> Unit) {
                                 maxLines = 1, overflow = TextOverflow.Ellipsis
                             )
                         }
+                        AddButton(vm, tr)
                         DownloadButton(vm, tr)
                     }
                 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -15,6 +16,11 @@ class AppVM(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("musicfy", 0)
     val store = DownloadStore(app)
     val player = PlayerController(app, store)
+    val playlists = PlaylistStore(app)
+
+    /** Track currently being added to a playlist (shows the "Add to playlist" dialog). */
+    var addTarget by mutableStateOf<Track?>(null)
+    val toasts = MutableSharedFlow<String>(extraBufferCapacity = 8)
 
     private val jamendoGenres = listOf(
         "Pop", "Rock", "Electronic", "HipHop", "Jazz", "Classical",
@@ -72,6 +78,19 @@ class AppVM(app: Application) : AndroidViewModel(app) {
     fun selectGenre(g: String?) {
         genre = if (genre == g) null else g
         loadHome()
+    }
+
+    fun addToPlaylist(playlistId: String, track: Track) {
+        val name = playlists.playlists.value.firstOrNull { it.id == playlistId }?.name ?: return
+        toasts.tryEmit(
+            if (playlists.addTrack(playlistId, track)) "Added to \"$name\"" else "Already in \"$name\""
+        )
+    }
+
+    fun createAndAdd(name: String, track: Track) {
+        val p = playlists.create(name)
+        playlists.addTrack(p.id, track)
+        toasts.tryEmit("Added to \"${p.name}\"")
     }
 
     fun selectSource(s: Source) {

@@ -9,7 +9,7 @@ Download track,offline,must,yes,yes,Only tracks that allow download
 Download album,offline,must,yes,yes,
 Offline playback,offline,must,yes,yes,Private app storage
 Android back button,nav,must,yes,yes,
-Playlists,library,should,yes,no,Not built yet
+Playlists,library,should,yes,yes,Create/rename/delete + add via button next to each track
 Liked songs,library,should,yes,no,Not built yet
 Lyrics / podcasts / social,extras,could,yes,skip,Licensed or network features
 Major-label catalogue,content,must,yes,skip,Cannot be cloned

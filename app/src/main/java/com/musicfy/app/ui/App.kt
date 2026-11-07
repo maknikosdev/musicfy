@@ -77,6 +77,7 @@ object Routes {
     const val LIBRARY = "library"
     const val ALBUM = "album/{id}"
     const val ARTIST = "artist/{id}"
+    const val PLAYLIST = "playlist/{id}"
 }
 
 @Composable
@@ -87,7 +88,7 @@ fun App(vm: AppVM) {
     val snack = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        merge(vm.store.errors, vm.player.errors).collect { snack.showSnackbar(it) }
+        merge(vm.store.errors, vm.player.errors, vm.toasts).collect { snack.showSnackbar(it) }
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -114,7 +115,7 @@ fun App(vm: AppVM) {
             ) {
                 composable(Routes.HOME) { HomeScreen(vm) }
                 composable(Routes.SEARCH) { SearchScreen(vm, nav) }
-                composable(Routes.LIBRARY) { LibraryScreen(vm) }
+                composable(Routes.LIBRARY) { LibraryScreen(vm, nav) }
                 composable(
                     Routes.ALBUM,
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
@@ -123,6 +124,10 @@ fun App(vm: AppVM) {
                     Routes.ARTIST,
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
                 ) { ArtistScreen(vm, nav, it.arguments?.getString("id").orEmpty()) }
+                composable(
+                    Routes.PLAYLIST,
+                    arguments = listOf(navArgument("id") { type = NavType.StringType })
+                ) { PlaylistScreen(vm, nav, it.arguments?.getString("id").orEmpty()) }
             }
         }
 
@@ -132,6 +137,8 @@ fun App(vm: AppVM) {
             exit = slideOutVertically(tween(300)) { it } + fadeOut(tween(250))
         ) { NowPlaying(vm) { showPlayer = false } }
     }
+
+    vm.addTarget?.let { AddToPlaylistDialog(vm, it) }
 
     // Android back button: first closes the full-screen player, otherwise the NavHost
     // pops the screen stack (album -> search -> home -> exit).
